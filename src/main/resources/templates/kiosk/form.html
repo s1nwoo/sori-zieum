@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>SoriJieum 키오스크 방명록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root{
+            --brand: #ED6C00;
+            --brand-deep: #C85A00;   /* 버튼/테두리용 딥 톤 */
+            --brand-soft: rgba(237,108,0,0.12);
+
+            --bg: #fbfbfd;
+            --card: #ffffff;
+            --text: #1a1d29;
+            --muted: #6b7280;
+            --line: #ececf2;
+
+            --input-bg: #f6f6fb;
+            --danger: #e11d48;
+
+            --radius: 18px;
+            --shadow: 0 18px 50px rgba(17, 24, 39, 0.10);
+            --shadow-soft: 0 10px 30px rgba(17, 24, 39, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(900px 520px at 15% 0%, rgba(237,108,0,0.14), transparent 60%),
+                radial-gradient(900px 520px at 85% 0%, rgba(237,108,0,0.08), transparent 55%),
+                var(--bg);
+        }
+
+        .page { min-height: 100vh; display: grid; place-items: center; padding: 26px 16px; }
+        .wrap { width: 100%; max-width: 600px; }
+
+        /* Header */
+        .hero {
+            padding: 18px 18px 14px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, rgba(237,108,0,0.10), rgba(237,108,0,0.04));
+            border: 1px solid rgba(237,108,0,0.22);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 14px;
+        }
+        .brandRow { display: flex; align-items: center; gap: 14px; }
+        .logoBox {
+            width: 56px; height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--brand), #FFB24A);
+            box-shadow: 0 14px 30px rgba(237,108,0,0.28);
+            position: relative;
+            flex: 0 0 auto;
+        }
+        .logoBox:after{
+            content:"";
+            position:absolute;
+            inset: 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.60);
+        }
+        .heroText .title { font-size: 20px; font-weight: 900; letter-spacing: -0.3px; }
+        .heroText .sub { margin-top: 4px; font-size: 13px; color: var(--muted); }
+
+        .brandLogoWrap {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+        }
+        .brandLogo {
+            width: min(520px, 100%);
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 10px 18px rgba(17,24,39,0.10));
+        }
+
+        /* Card */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .grid { display: grid; gap: 14px; }
+        .field { display: grid; gap: 8px; }
+
+        .label {
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: -0.2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge {
+            font-size: 11px;
+            font-weight: 900;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: var(--brand-soft);
+            color: var(--brand-deep);
+            border: 1px solid rgba(237,108,0,0.22);
+        }
+        .badge.optional {
+            background: rgba(107,114,128,0.10);
+            color: var(--muted);
+            border-color: rgba(107,114,128,0.16);
+        }
+
+        input[type="text"], input[type="tel"], select, textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: var(--input-bg);
+            outline: none;
+            font-size: 14px;
+            transition: all .16s ease;
+        }
+        textarea { min-height: 140px; resize: none; line-height: 1.45; }
+
+        input:focus, select:focus, textarea:focus {
+            background: #fff;
+            border-color: rgba(237,108,0,0.55);
+            box-shadow: 0 0 0 4px rgba(237,108,0,0.14);
+        }
+
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+        .help { font-size: 12px; color: var(--muted); }
+        .err { color: var(--danger); font-size: 12px; margin-top: 2px; font-weight: 800; }
+
+        .consent {
+            margin-top: 8px;
+            padding: 12px 12px;
+            border-radius: 14px;
+            border: 1px dashed rgba(237,108,0,0.55);
+            background: rgba(237,108,0,0.06);
+        }
+        .consent label {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 13px;
+            color: #3b3f55;
+            line-height: 1.35;
+        }
+        .consent input[type="checkbox"]{
+            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--brand);
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 14px;
+            padding: 14px 16px;
+            border: 0;
+            border-radius: 16px;
+            font-weight: 900;
+            font-size: 15px;
+            letter-spacing: -0.2px;
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--brand), #FFB24A);
+            box-shadow: 0 16px 34px rgba(237,108,0,0.26);
+            transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+        }
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 10px 22px rgba(237,108,0,0.22);
+            filter: brightness(0.98);
+        }
+
+        .footerTip {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .footerTip strong { color: #3b3f55; }
+    </style>
+</head>
+
+<body>
+<div class="page">
+    <div class="wrap">
+
+        <div class="hero">
+            <div class="brandRow">
+                <div class="logoBox" aria-hidden="true"></div>
+                <div class="heroText">
+                    <div class="title">소리지음 방문 등록</div>
+                    <div class="sub">간단히 작성하고, 오늘의 방문을 기록해요.</div>
+                </div>
+            </div>
+
+            <!-- 로고 이미지 (static/assets/logo.png) -->
+            <div class="brandLogoWrap">
+                <img class="brandLogo" th:src="@{/assets/logo.png}" alt="SORIZEUM 로고">
+            </div>
+        </div>
+
+        <div class="card">
+            <form th:action="@{/kiosk}" th:object="${request}" method="post">
+                <div class="grid">
+
+                    <div class="field">
+                        <div class="label">이름 <span class="badge">필수</span></div>
+                        <input type="text" th:field="*{name}" placeholder="예) 홍길동">
+                        <div class="err" th:errors="*{name}"></div>
+                    </div>
+
+                    <div class="field">
+                        <div class="label">연락처 <span class="badge">필수</span></div>
+                        <input type="tel" th:field="*{phone}" placeholder="010-0000-0000">
+                        <div class="help">숫자만 입력해도 괜찮아요. (예: 01012345678)</div>
+                        <div class="err" th:errors="*{phone}"></div>
+                    </div>
+
+                    <div class="row2">
+                        <div class="field">
+                            <div class="label">성별 <span class="badge">필수</span></div>
+                            <select th:field="*{gender}">
+                                <option value="" selected>성별 선택</option>
+                                <option value="MALE">남</option>
+                                <option value="FEMALE">여</option>
+                            </select>
+                            <div class="err" th:errors="*{gender}"></div>
+                        </div>
+
+                        <div class="field">
+                            <div class="label">나이 <span class="badge">필수</span></div>
+                            <select th:field="*{ageGroup}">
+                                <option value="" selected>나이 선택</option>
+                                <option value="AGE_7_12">7~12세 (초등)</option>
+                                <option value="AGE_13_15">13~15세 (중등)</option>
+                                <option value="AGE_16_18">16~18세 (고등)</option>
+                                <option value="AGE_19_24">19~24세 (후기)</option>
+                            </select>
+                            <div class="err" th:errors="*{ageGroup}"></div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="label">지역 <span class="badge">필수</span></div>
+                        <input type="text" th:field="*{region}" placeholder="예) 강서구">
+                        <div class="err" th:errors="*{region}"></div>
+                    </div>
+
+                    <div class="field">
+                        <div class="label">소리지음에 바라는 점 <span class="badge optional">선택</span></div>
+                        <textarea th:field="*{message}" placeholder="원하는 프로그램이나 개선점이 있다면 자유롭게 적어주세요."></textarea>
+                        <div class="err" th:errors="*{message}"></div>
+                    </div>
+
+                    <div class="consent">
+                        <label>
+                            <input type="checkbox" th:field="*{consent}">
+                            <span>
+                                개인정보이용 수집에 동의합니다. (방문 기록 및 통계 목적)
+                                <div class="err" th:errors="*{consent}"></div>
+                            </span>
+                        </label>
+                    </div>
+
+                    <button class="btn" type="submit">등록하기</button>
+
+                </div>
+            </form>
+        </div>
+
+        <div class="footerTip">
+            입력 후 <strong>3초 뒤 자동으로 초기화</strong>됩니다.
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

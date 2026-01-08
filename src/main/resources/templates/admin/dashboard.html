@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>관리자 대시보드 - SoriJieum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Chart.js (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root{
+            --brand:#ED6C00;
+            --bg:#fbfbfd;
+            --card:#fff;
+            --text:#1a1d29;
+            --muted:#6b7280;
+            --line:#ececf2;
+            --shadow:0 18px 50px rgba(17,24,39,0.10);
+            --radius:16px;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+            background: radial-gradient(900px 520px at 15% 0%, rgba(237,108,0,0.10), transparent 60%), var(--bg);
+            color:var(--text);
+        }
+        .wrap{max-width:1200px; margin:0 auto; padding:22px 16px;}
+
+        .topbar{
+            display:flex; align-items:center; justify-content:space-between; gap:14px;
+            padding:14px 16px; border:1px solid rgba(237,108,0,0.20);
+            border-radius:var(--radius);
+            background:linear-gradient(135deg, rgba(237,108,0,0.10), rgba(237,108,0,0.03));
+        }
+        .brand{display:flex; align-items:center; gap:12px;}
+        .logo{
+            width:42px; height:42px; border-radius:14px;
+            background:linear-gradient(135deg, var(--brand), #FFB24A);
+            box-shadow:0 14px 26px rgba(237,108,0,0.22);
+        }
+        .title{font-weight:900; letter-spacing:-0.2px;}
+        .sub{font-size:12px; color:var(--muted); margin-top:2px;}
+
+        .grid{
+            display:grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap:12px;
+            margin-top:14px;
+        }
+        @media(max-width:1100px){ .grid{grid-template-columns:1fr 1fr;} }
+        @media(max-width:760px){ .grid{grid-template-columns:1fr;} }
+
+        .card{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            padding:16px;
+        }
+        .card h3{margin:0 0 12px; font-size:15px; font-weight:900;}
+        .muted{color:var(--muted); font-size:12px;}
+
+        .kpiRow{display:flex; gap:12px; flex-wrap:wrap;}
+        .kpi{
+            flex:1 1 220px;
+            border:1px solid var(--line);
+            border-radius:14px;
+            padding:14px;
+            background:#fff;
+        }
+        .kpi .label{font-size:12px; color:var(--muted); font-weight:800;}
+        .kpi .value{font-size:24px; font-weight:900; margin-top:4px;}
+        .kpi .value b{color:var(--brand);}
+
+        .chartBox{height:260px;}
+        canvas{width:100% !important; height:100% !important;}
+
+        table{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
+        th, td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top;}
+        th{font-size:12px; color:var(--muted); font-weight:900;}
+        .badge{
+            display:inline-block;
+            padding:4px 8px;
+            border-radius:999px;
+            background:rgba(237,108,0,0.10);
+            border:1px solid rgba(237,108,0,0.18);
+            color:#b45500;
+            font-weight:900;
+            font-size:11px;
+        }
+        .textInput, .selectInput{
+            width:100%;
+            padding:11px 12px;
+            border-radius:12px;
+            border:1px solid var(--line);
+            background:#fff;
+        }
+        .btn{
+            cursor:pointer;
+            padding:10px 14px;
+            border-radius:999px;
+            border:1px solid rgba(237,108,0,0.18);
+            background:rgba(237,108,0,0.10);
+            color:#b45500;
+            font-weight:900;
+            font-size:12px;
+            text-decoration:none;
+            display:inline-block;
+        }
+        .link{
+            color:var(--muted);
+            font-size:12px;
+            text-decoration:none;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <!-- 상단 -->
+    <div class="topbar">
+        <div class="brand">
+            <div class="logo" aria-hidden="true"></div>
+            <div>
+                <div class="title">관리자 대시보드</div>
+                <div class="sub">
+                    방문 통계 및 등록 리스트
+                </div>
+            </div>
+        </div>
+        <div class="muted">현재 단계: 인증 없음</div>
+    </div>
+
+    <!-- KPI -->
+    <div class="card" style="margin-top:14px;">
+        <h3>요약</h3>
+        <div class="kpiRow">
+            <div class="kpi">
+                <div class="label">누적 방문</div>
+                <div class="value"><b th:text="${totalCount}">0</b> 건</div>
+            </div>
+            <div class="kpi">
+                <div class="label">최근 24시간 방문</div>
+                <div class="value"><b th:text="${last24hCount}">0</b> 건</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 차트 6개 -->
+    <div class="grid">
+        <div class="card">
+            <h3>성별 분포</h3>
+            <div class="chartBox"><canvas id="chartGender"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>연령대 분포</h3>
+            <div class="chartBox"><canvas id="chartAge"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>월별 등록 현황</h3>
+            <div class="chartBox"><canvas id="chartMonth"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>분기별 등록 현황</h3>
+            <div class="chartBox"><canvas id="chartQuarter"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>요일별 등록 현황</h3>
+            <div class="chartBox"><canvas id="chartDow"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>평일 / 주말 등록 현황</h3>
+            <div class="chartBox"><canvas id="chartWW"></canvas></div>
+        </div>
+    </div>
+
+    <!-- 하단: 전체 등록 리스트(검색/필터/페이지네이션) -->
+    <div class="card" id="list" style="margin-top:14px;">
+        <h3>등록 리스트</h3>
+
+        <!-- 검색/필터 (GET /admin) -->
+        <form method="get" action="/admin#list"
+              style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:10px;">
+
+            <div style="flex: 1 1 260px;">
+                <div class="muted" style="margin-bottom:6px;">검색(이름/연락처/지역/의견)</div>
+                <input class="textInput" name="q" th:value="${q}"
+                       placeholder="예) 홍길동, 0101234, 강서구, 좋았어요">
+            </div>
+
+            <div style="flex: 0 0 160px;">
+                <div class="muted" style="margin-bottom:6px;">성별</div>
+                <select class="selectInput" name="gender">
+                    <option value="" th:selected="${gender == ''}">전체</option>
+                    <option value="MALE" th:selected="${gender == 'MALE'}">남</option>
+                    <option value="FEMALE" th:selected="${gender == 'FEMALE'}">여</option>
+                </select>
+            </div>
+
+            <div style="flex: 0 0 190px;">
+                <div class="muted" style="margin-bottom:6px;">연령대</div>
+                <select class="selectInput" name="ageGroup">
+                    <option value="" th:selected="${ageGroup == ''}">전체</option>
+                    <option value="AGE_7_12" th:selected="${ageGroup == 'AGE_7_12'}">7~12(초등)</option>
+                    <option value="AGE_13_15" th:selected="${ageGroup == 'AGE_13_15'}">13~15(중등)</option>
+                    <option value="AGE_16_18" th:selected="${ageGroup == 'AGE_16_18'}">16~18(고등)</option>
+                    <option value="AGE_19_24" th:selected="${ageGroup == 'AGE_19_24'}">19~24(후기)</option>
+                </select>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button type="submit" class="btn">검색</button>
+                <a href="/admin" class="link" style="align-self:center;">초기화</a>
+            </div>
+        </form>
+
+        <div class="muted" style="margin-bottom:8px;">
+            총 <b th:text="${visits.totalElements}">0</b>건 /
+            <span th:text="${visits.number + 1}">1</span> 페이지 /
+            <span th:text="${visits.totalPages}">1</span> 페이지 중
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th style="width:70px;">ID</th>
+                <th style="width:110px;">이름</th>
+                <th style="width:140px;">연락처</th>
+                <th style="width:90px;">성별</th>
+                <th style="width:120px;">나이</th>
+                <th style="width:120px;">지역</th>
+                <th>의견</th>
+                <th style="width:150px;">등록일시</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="v : ${visits.content}">
+                <td th:text="${v.id}">1</td>
+                <td th:text="${v.name}">홍길동</td>
+                <td><span class="badge" th:text="${v.phone}">01012345678</span></td>
+                <td th:switch="${v.gender}">
+                    <span th:case="'MALE'">남성</span>
+                    <span th:case="'FEMALE'">여성</span>
+                    <span th:case="*">-</span>
+                </td>
+                <td th:switch="${v.ageGroup}">
+                    <span th:case="'AGE_7_12'">7~12(초등)</span>
+                    <span th:case="'AGE_13_15'">13~15(중등)</span>
+                    <span th:case="'AGE_16_18'">16~18(고등)</span>
+                    <span th:case="'AGE_19_24'">19~24(후기)</span>
+                    <span th:case="*">-</span>
+                </td>
+                <td th:text="${v.region}">강서구</td>
+                <td class="muted" th:text="${v.message}">-</td>
+                <td th:text="${#temporals.format(v.createdAt.atZoneSameInstant(T(java.time.ZoneId).of('Asia/Seoul')), 'yyyy-MM-dd HH:mm')}">
+                    2026-01-08 11:23
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(visits.content)}">
+                <td colspan="7" class="muted">조건에 맞는 데이터가 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 페이지네이션 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:10px;">
+            <div>
+                <a th:if="${visits.hasPrevious()}"
+                   th:href="@{/admin(page=${visits.number - 1}, size=${visits.size}, q=${q}, gender=${gender}, ageGroup=${ageGroup})} + '#list'"
+                   class="link">이전</a>
+            </div>
+
+            <div class="muted">
+                <b th:text="${visits.number + 1}">1</b> / <span th:text="${visits.totalPages}">1</span>
+            </div>
+
+            <div>
+                <a th:if="${visits.hasNext()}"
+                   th:href="@{/admin(page=${visits.number + 1}, size=${visits.size}, q=${q}, gender=${gender}, ageGroup=${ageGroup})} + '#list'"
+                   class="link">다음</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 차트 데이터 바인딩 -->
+<script th:inline="javascript">
+    const genderLabels = /*[[${genderLabels}]]*/ [];
+    const genderCounts = /*[[${genderCounts}]]*/ [];
+
+    const ageLabels = /*[[${ageLabels}]]*/ [];
+    const ageCounts = /*[[${ageCounts}]]*/ [];
+
+    const monthLabels = /*[[${monthLabels}]]*/ [];
+    const monthCounts = /*[[${monthCounts}]]*/ [];
+
+    const quarterLabels = /*[[${quarterLabels}]]*/ [];
+    const quarterCounts = /*[[${quarterCounts}]]*/ [];
+
+    const dowLabels = /*[[${dowLabels}]]*/ [];
+    const dowCounts = /*[[${dowCounts}]]*/ [];
+
+    const wwLabels = /*[[${wwLabels}]]*/ [];
+    const wwCounts = /*[[${wwCounts}]]*/ [];
+
+    const BRAND = '#ED6C00';
+    const BRAND2 = '#FFB24A';
+
+    function makePie(id, labels, data) {
+        new Chart(document.getElementById(id), {
+            type: 'pie',
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    backgroundColor: [BRAND, BRAND2]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    function makeBar(id, labels, data) {
+        new Chart(document.getElementById(id), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: '건수',
+                    data,
+                    backgroundColor: BRAND
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    }
+
+    makePie('chartGender', genderLabels, genderCounts);
+    makeBar('chartAge', ageLabels, ageCounts);
+    makeBar('chartMonth', monthLabels, monthCounts);
+    makeBar('chartQuarter', quarterLabels, quarterCounts);
+    makeBar('chartDow', dowLabels, dowCounts);
+    makeBar('chartWW', wwLabels, wwCounts);
+</script>
+
+</body>
+</html>

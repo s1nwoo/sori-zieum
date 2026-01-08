@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>등록 완료 - SoriJieum</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- 3초 후 다시 입력 화면으로 -->
+  <meta http-equiv="refresh" content="3;url=/kiosk">
+
+  <style>
+    :root{
+        --brand: #ED6C00;
+        --brand-soft: rgba(237,108,0,0.12);
+
+        --bg: #fbfbfd;
+        --card: #ffffff;
+        --text: #1a1d29;
+        --muted: #6b7280;
+        --line: #ececf2;
+
+        --radius: 18px;
+        --shadow: 0 18px 50px rgba(17, 24, 39, 0.10);
+        --shadow-soft: 0 10px 30px rgba(17, 24, 39, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body{
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+        color: var(--text);
+        background:
+            radial-gradient(900px 520px at 15% 0%, rgba(237,108,0,0.14), transparent 60%),
+            radial-gradient(900px 520px at 85% 0%, rgba(237,108,0,0.08), transparent 55%),
+            var(--bg);
+    }
+
+    .page { min-height: 100vh; display: grid; place-items: center; padding: 26px 16px; }
+    .wrap { width: 100%; max-width: 600px; }
+
+    .hero {
+        padding: 18px 18px 14px;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, rgba(237,108,0,0.10), rgba(237,108,0,0.04));
+        border: 1px solid rgba(237,108,0,0.22);
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 14px;
+    }
+
+    .brandLogoWrap {
+        display: flex;
+        justify-content: center;
+    }
+    .brandLogo {
+        width: min(520px, 100%);
+        height: auto;
+        display: block;
+        filter: drop-shadow(0 10px 18px rgba(17,24,39,0.10));
+    }
+
+    .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 22px 18px;
+        text-align: center;
+    }
+
+    .check {
+        width: 64px; height: 64px;
+        margin: 4px auto 12px;
+        border-radius: 22px;
+        background: var(--brand-soft);
+        border: 1px solid rgba(237,108,0,0.22);
+        display: grid;
+        place-items: center;
+    }
+    .check svg { width: 34px; height: 34px; fill: var(--brand); }
+
+    .title {
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: -0.3px;
+        margin: 0 0 6px;
+    }
+    .sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: rgba(237,108,0,0.08);
+        border: 1px solid rgba(237,108,0,0.18);
+        color: #3b3f55;
+        font-size: 13px;
+        font-weight: 800;
+    }
+    .dot {
+        width: 10px; height: 10px;
+        border-radius: 999px;
+        background: var(--brand);
+        box-shadow: 0 0 0 4px rgba(237,108,0,0.14);
+    }
+
+    .link {
+        margin-top: 14px;
+        display: inline-block;
+        color: var(--brand);
+        font-weight: 900;
+        text-decoration: none;
+        border-bottom: 1px dashed rgba(237,108,0,0.55);
+        padding-bottom: 2px;
+    }
+
+    .footerTip {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .footerTip strong { color: #3b3f55; }
+  </style>
+</head>
+
+<body>
+<div class="page">
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="brandLogoWrap">
+        <img class="brandLogo" th:src="@{/assets/logo.png}" alt="SORIZEUM 로고">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="check" aria-hidden="true">
+        <!-- 체크 아이콘(SVG) -->
+        <svg viewBox="0 0 24 24" role="img" aria-label="완료">
+          <path d="M9.0 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"></path>
+        </svg>
+      </div>
+
+      <h2 class="title">등록이 완료되었습니다</h2>
+      <p class="sub">
+        방문 기록이 저장되었습니다.<br>
+        잠시 후 자동으로 입력 화면으로 돌아갑니다.
+      </p>
+
+      <div class="pill">
+        <span class="dot" aria-hidden="true"></span>
+        3초 후 자동 이동
+      </div>
+
+      <div>
+        <a class="link" href="/kiosk">즉시 돌아가기</a>
+      </div>
+    </div>
+
+    <div class="footerTip">
+      다음 이용자를 위해 <strong>입력 화면으로 자동 복귀</strong>합니다.
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

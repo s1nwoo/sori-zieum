@@ -125,9 +125,7 @@
             <div class="logo" aria-hidden="true"></div>
             <div>
                 <div class="title">관리자 대시보드</div>
-                <div class="sub">
-                    방문 통계 및 등록 리스트
-                </div>
+                <div class="sub">방문 통계 및 등록 리스트</div>
             </div>
         </div>
         <div class="muted">현재 단계: 인증 없음</div>
@@ -148,7 +146,7 @@
         </div>
     </div>
 
-    <!-- 차트 6개 -->
+    <!-- 차트: 기존 6개 (월별/지역별 위치 교체) -->
     <div class="grid">
         <div class="card">
             <h3>성별 분포</h3>
@@ -160,9 +158,10 @@
             <div class="chartBox"><canvas id="chartAge"></canvas></div>
         </div>
 
+        <!-- 지역별을 먼저 배치 (기존 월별 위치) -->
         <div class="card">
-            <h3>월별 등록 현황</h3>
-            <div class="chartBox"><canvas id="chartMonth"></canvas></div>
+            <h3>지역별 등록 현황</h3>
+            <div class="chartBox"><canvas id="chartRegion"></canvas></div>
         </div>
 
         <div class="card">
@@ -179,13 +178,18 @@
             <h3>평일 / 주말 등록 현황</h3>
             <div class="chartBox"><canvas id="chartWW"></canvas></div>
         </div>
+
+        <!-- 월별을 가로 전체로 배치 (기존 지역별 위치) -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h3>월별 등록 현황</h3>
+            <div class="chartBox"><canvas id="chartMonth"></canvas></div>
+        </div>
     </div>
 
     <!-- 하단: 전체 등록 리스트(검색/필터/페이지네이션) -->
     <div class="card" id="list" style="margin-top:14px;">
         <h3>등록 리스트</h3>
 
-        <!-- 검색/필터 (GET /admin) -->
         <form method="get" action="/admin#list"
               style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:10px;">
 
@@ -222,7 +226,7 @@
         </form>
 
         <div class="muted" style="margin-bottom:8px;">
-            총 <b th:text="${visits.totalElements}">0</b>건 /
+            이 <b th:text="${visits.totalElements}">0</b>건 /
             <span th:text="${visits.number + 1}">1</span> 페이지 /
             <span th:text="${visits.totalPages}">1</span> 페이지 중
         </div>
@@ -265,12 +269,11 @@
             </tr>
 
             <tr th:if="${#lists.isEmpty(visits.content)}">
-                <td colspan="7" class="muted">조건에 맞는 데이터가 없습니다.</td>
+                <td colspan="8" class="muted">조건에 맞는 데이터가 없습니다.</td>
             </tr>
             </tbody>
         </table>
 
-        <!-- 페이지네이션 -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:10px;">
             <div>
                 <a th:if="${visits.hasPrevious()}"
@@ -292,7 +295,6 @@
 
 </div>
 
-<!-- 차트 데이터 바인딩 -->
 <script th:inline="javascript">
     const genderLabels = /*[[${genderLabels}]]*/ [];
     const genderCounts = /*[[${genderCounts}]]*/ [];
@@ -311,6 +313,15 @@
 
     const wwLabels = /*[[${wwLabels}]]*/ [];
     const wwCounts = /*[[${wwCounts}]]*/ [];
+
+    const regionLabels = /*[[${regionLabels}]]*/ [];
+    const regionCounts = /*[[${regionCounts}]]*/ [];
+
+    // 차트 선명도 개선 (레티나 스케일링)
+    Chart.defaults.devicePixelRatio = Math.max(window.devicePixelRatio || 1, 2);
+    Chart.defaults.font.family = "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = "#1a1d29";
 
     const BRAND = '#ED6C00';
     const BRAND2 = '#FFB24A';
@@ -332,7 +343,9 @@
         });
     }
 
-    function makeBar(id, labels, data) {
+    function makeBar(id, labels, data, options = {}) {
+        const { rotateLabels = false, smallLabels = false } = options;
+
         new Chart(document.getElementById(id), {
             type: 'bar',
             data: {
@@ -340,13 +353,25 @@
                 datasets: [{
                     label: '건수',
                     data,
-                    backgroundColor: BRAND
+                    backgroundColor: BRAND,
+                    maxBarThickness: 60
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: true,
                 plugins: { legend: { display: false } },
                 scales: {
+                    x: {
+                        ticks: {
+                            maxRotation: rotateLabels ? 45 : 0,
+                            minRotation: 0,
+                            autoSkip: false,
+                            font: {
+                                size: smallLabels ? 10 : 12
+                            }
+                        }
+                    },
                     y: { beginAtZero: true, ticks: { precision: 0 } }
                 }
             }
@@ -355,10 +380,11 @@
 
     makePie('chartGender', genderLabels, genderCounts);
     makeBar('chartAge', ageLabels, ageCounts);
-    makeBar('chartMonth', monthLabels, monthCounts);
+    makeBar('chartMonth', monthLabels, monthCounts, { smallLabels: true }); // 작은 글씨
     makeBar('chartQuarter', quarterLabels, quarterCounts);
     makeBar('chartDow', dowLabels, dowCounts);
     makeBar('chartWW', wwLabels, wwCounts);
+    makeBar('chartRegion', regionLabels, regionCounts);
 </script>
 
 </body>

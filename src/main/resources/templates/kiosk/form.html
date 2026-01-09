@@ -93,14 +93,14 @@
 
         .label {
             font-weight: 900;
-            font-size: 13px;
+            font-size: 18px; /* 변경: 13px -> 16px (대제목 3포인트 증가) */
             letter-spacing: -0.2px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         .badge {
-            font-size: 11px;
+            font-size: 9px; /* 변경: 11px -> 9px (필수/선택 2포인트 감소) */
             font-weight: 900;
             padding: 4px 8px;
             border-radius: 999px;
@@ -222,7 +222,7 @@
 
                     <div class="field">
                         <div class="label">연락처 <span class="badge">필수</span></div>
-                        <input type="tel" th:field="*{phone}" placeholder="010-0000-0000">
+                        <input type="tel" th:field="*{phone}" placeholder="01012345678">
                         <div class="help">숫자만 입력해도 괜찮아요. (예: 01012345678)</div>
                         <div class="err" th:errors="*{phone}"></div>
                     </div>
@@ -253,7 +253,17 @@
 
                     <div class="field">
                         <div class="label">지역 <span class="badge">필수</span></div>
-                        <input type="text" th:field="*{region}" placeholder="예) 강서구">
+
+                        <!-- 변경: 텍스트 입력 -> select 선택 -->
+                        <select th:field="*{region}">
+                            <option value="" selected>지역 선택</option>
+                            <option value="강서구">강서구</option>
+                            <option value="양천구">양천구</option>
+                            <option value="구로구">구로구</option>
+                            <option value="영등포구">영등포구</option>
+                            <option value="기타">기타</option>
+                        </select>
+
                         <div class="err" th:errors="*{region}"></div>
                     </div>
 
